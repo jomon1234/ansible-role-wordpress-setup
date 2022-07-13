@@ -1,0 +1,4 @@
+---
+# handlers file for wordpress-setup
+    - name: flush mysql previlages
+      ansible.builtin.shell: mysql --execute="FLUSH PRIVILEGES"

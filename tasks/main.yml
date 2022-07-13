@@ -1,0 +1,33 @@
+---
+# tasks file for wordpress-setup
+- name: Downloading and unzipping wordpress files
+  ansible.builtin.shell:
+    cmd: curl https://wordpress.org/latest.tar.gz | sudo -u www-data tar zx -C "{{ document_root }}"
+  ignore_errors: true
+
+- name: creating database
+  community.mysql.mysql_db:
+    login_user: root
+    name: "{{database_name}}"
+    login_unix_socket: /run/mysqld/mysqld.sock
+
+- name: create user
+  community.mysql.mysql_user:
+    name: "{{database_user}}"
+    password: "{{dbuser_pass}}"
+    priv: '*.*:ALL'
+    state: present
+    login_unix_socket: /run/mysqld/mysqld.sock
+  notify: flush mysql previlages
+
+- name: generating wp-config file
+  ansible.builtin.template:
+    src: wp-config.php.j2
+    dest: "{{ document_root }}/wordpress/wp-config.php"
+    owner: www-data
+
+- name: copying .htaccess to move to wordpress folder
+  ansible.builtin.copy:
+    src: .htaccess
+    dest: "{{ document_root }}"
+    owner: www-data
